@@ -3,14 +3,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import pytz
 
-# -------------------------------
-# Load dataset
-# -------------------------------
 df = pd.read_csv("Play Store Data.csv")
 
-# -------------------------------
-# Clean Installs
-# -------------------------------
 df["Installs_Clean"] = (
     df["Installs"]
     .astype(str)
@@ -18,20 +12,11 @@ df["Installs_Clean"] = (
 )
 df["Installs_Clean"] = pd.to_numeric(df["Installs_Clean"], errors="coerce").fillna(0)
 
-# -------------------------------
-# Clean Reviews
-# -------------------------------
 df["Reviews"] = pd.to_numeric(df["Reviews"], errors="coerce").fillna(0)
 
-# -------------------------------
-# Clean Last Updated → datetime
-# -------------------------------
 df["Last Updated"] = pd.to_datetime(df["Last Updated"], errors="coerce")
 df["YearMonth"] = df["Last Updated"].dt.to_period("M")
 
-# -------------------------------
-# Apply Filters
-# -------------------------------
 df = df[
     (df["Reviews"] > 500) &
     (~df["App"].str.startswith(("x", "y", "z", "X", "Y", "Z"))) &
@@ -39,9 +24,6 @@ df = df[
     (df["Category"].str.startswith(("E", "C", "B")))
 ]
 
-# -------------------------------
-# Translate Categories
-# -------------------------------
 category_translation = {
     "BEAUTY": "सौंदर्य",    # Hindi
     "BUSINESS": "வணிகம்",   # Tamil
@@ -50,23 +32,14 @@ category_translation = {
 
 df["Category_Translated"] = df["Category"].str.upper().replace(category_translation)
 
-# -------------------------------
-# Group by Time + Category
-# -------------------------------
 df_grouped = (
     df.groupby(["YearMonth", "Category_Translated"])["Installs_Clean"]
     .sum()
     .reset_index()
 )
 
-# -------------------------------
-# Calculate Month-over-Month Growth
-# -------------------------------
 df_grouped["Pct_Change"] = df_grouped.groupby("Category_Translated")["Installs_Clean"].pct_change()
 
-# -------------------------------
-# Restrict to Time: 6 PM – 9 PM IST
-# -------------------------------
 ist = pytz.timezone("Asia/Kolkata")
 current_time = datetime.now(ist)
 
@@ -100,4 +73,5 @@ if 18 <= current_time.hour < 21:  # between 6 PM and 9 PM
     plt.show()
 
 else:
-    print("⏰ Outside allowed time (6 PM - 9 PM IST). Chart will not be displayed.")
+    print(" Outside allowed time (6 PM - 9 PM IST). Chart will not be displayed.")
+
